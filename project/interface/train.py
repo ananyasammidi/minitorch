@@ -108,7 +108,7 @@ def render_train_interface(
 
     df = []
 
-    def log_fn(epoch, total_loss, correct, losses):
+    def log_fn(epoch, total_loss, correct, losses, *args):
         time_elapsed = time.time() - start_time
         if hasattr(train, "train"):
             st_progress.progress(epoch / max_epochs)

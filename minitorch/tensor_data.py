@@ -96,7 +96,7 @@ def broadcast_index(
     # If smaller tensor dimension is 1, map to index 0
     # Otherwise, use the corresponding index from big_index
     alignment = len(big_shape) - len(shape)
-    
+
     for i in range(len(shape)):
         big = i + alignment
         if shape[i] == 1:

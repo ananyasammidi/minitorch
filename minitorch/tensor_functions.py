@@ -101,7 +101,7 @@ class Mul(Function):
     def forward(ctx: Context, a: Tensor, b: Tensor) -> Tensor:
         # TODO: Implement for Task 2.3.
         ctx.save_for_backward(a, b)
-        return a.f.mul_zip(a, b) 
+        return a.f.mul_zip(a, b)
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
@@ -169,7 +169,7 @@ class Exp(Function):
 class Sum(Function):
     @staticmethod
     def forward(ctx: Context, a: Tensor, dim: Tensor) -> Tensor:
-        ctx.save_for_backward(a.shape, dim.item()) 
+        ctx.save_for_backward(a.shape, dim.item())
         return a.f.add_reduce(a, int(dim.item()))
 
     @staticmethod
@@ -235,7 +235,7 @@ class Permute(Function):
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
         # TODO: Implement for Task 2.4.
-        (ints_list,) = ctx.saved_values 
+        (ints_list,) = ctx.saved_values
         inverse = [0] * len(ints_list)
         for i, position in enumerate(ints_list):
             inverse[position] = i
@@ -427,12 +427,12 @@ but was expecting derivative %f from central difference.
         ind = x._tensor.sample()
         check = grad_central_difference(f, *vals, arg=i, ind=ind)
         assert x.grad is not None
-        
+
         # Handle discontinuous functions (like comparisons) that can have large numerical gradients
         # but zero analytical gradients
         analytical_grad = x.grad[ind]
         numerical_grad = check
-        
+
         # If the analytical gradient is zero but numerical gradient is very large,
         # this is likely a discontinuous function at a boundary
         if abs(analytical_grad) == 0.0 and abs(numerical_grad) > 1000:
@@ -441,7 +441,7 @@ but was expecting derivative %f from central difference.
             if abs(robust_check) < 100:
                 # The large gradient was due to discontinuity, accept zero analytical gradient
                 continue
-        
+
         np.testing.assert_allclose(
             analytical_grad,
             numerical_grad,

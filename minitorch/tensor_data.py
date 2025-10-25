@@ -45,7 +45,10 @@ def index_to_position(index: Index, strides: Strides) -> int:
     # TODO: Implement for Task 2.1.
     # Hint: Use strides to navigate through memory layout
     # Each dimension contributes to the final position based on its stride
-    raise NotImplementedError("Need to implement for Task 2.1")
+    position = 0
+    for i, stride in zip(index, strides):
+        position += i * stride
+    return int(position)
 
 
 def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
@@ -64,7 +67,9 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
     # TODO: Implement for Task 2.1.
     # Hint: Think about converting a number to different bases
     # Work backwards from the last dimension to the first
-    raise NotImplementedError("Need to implement for Task 2.1")
+    for i in range(len(shape) - 1, -1, -1):
+        out_index[i] = ordinal % shape[i]
+        ordinal = ordinal // shape[i]
 
 
 def broadcast_index(
@@ -90,7 +95,14 @@ def broadcast_index(
     # Hint: Align dimensions from the right (last dimension first)
     # If smaller tensor dimension is 1, map to index 0
     # Otherwise, use the corresponding index from big_index
-    raise NotImplementedError("Need to implement for Task 2.2")
+    alignment = len(big_shape) - len(shape)
+    
+    for i in range(len(shape)):
+        big = i + alignment
+        if shape[i] == 1:
+            out_index[i] = 0
+        else:
+            out_index[i] = big_index[big]
 
 
 def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
@@ -111,15 +123,31 @@ def shape_broadcast(shape1: UserShape, shape2: UserShape) -> UserShape:
     # Hint: Pad shorter shape with 1s on the left to make them same length
     # Then check each dimension: must be equal, or one must be 1
     # If one is 1, take the other; if both equal, take either
-    raise NotImplementedError("Need to implement for Task 2.2")
+    s1 = list(shape1)
+    s2 = list(shape2)
+    if len(s1) < len(s2):
+        s1 = [1] * (len(s2) - len(s1)) + s1
+    elif len(s2) < len(s1):
+        s2 = [1] * (len(s1) - len(s2)) + s2
+    out_shape = []
+    for dim1, dim2 in zip(s1, s2):
+        if dim1 == dim2:
+            out_shape.append(dim1)
+        elif dim1 == 1:
+            out_shape.append(dim2)
+        elif dim2 == 1:
+            out_shape.append(dim1)
+        else:
+            raise IndexingError(f"Cannot broadcast shapes {shape1} and {shape2}")
+    return tuple(out_shape)
 
 
 def strides_from_shape(shape: UserShape) -> UserStrides:
     layout = [1]
-    offset = 1
-    for s in reversed(shape):
-        layout.append(s * offset)
-        offset = s * offset
+    alignment = 1
+    for stride in reversed(shape):
+        layout.append(stride * alignment)
+        alignment = stride * alignment
     return tuple(reversed(layout[:-1]))
 
 
@@ -205,7 +233,7 @@ class TensorData:
             yield tuple(out_index)
 
     def sample(self) -> UserIndex:
-        return tuple((random.randint(0, s - 1) for s in self.shape))
+        return tuple((random.randint(0, stride - 1) for stride in self.shape))
 
     def get(self, key: UserIndex) -> float:
         x: float = self._storage[self.index(key)]
@@ -234,20 +262,22 @@ class TensorData:
         # TODO: Implement for Task 2.1.
         # Hint: Reorder both shape and strides according to the permutation
         # The storage remains the same, only the view changes
-        raise NotImplementedError("Need to implement for Task 2.1")
+        new_shape = tuple(self.shape[i] for i in order)
+        new_strides = tuple(self.strides[i] for i in order)
+        return TensorData(self._storage, new_shape, new_strides)
 
     def to_string(self) -> str:
-        s = ""
+        stride = ""
         for index in self.indices():
             l = ""
             for i in range(len(index) - 1, -1, -1):
                 if index[i] == 0:
-                    l = "\n%s[" % ("\t" * i) + l
+                    l = "\n%stride[" % ("\t" * i) + l
                 else:
                     break
-            s += l
+            stride += l
             v = self.get(index)
-            s += f"{v:3.2f}"
+            stride += f"{v:3.2f}"
             l = ""
             for i in range(len(index) - 1, -1, -1):
                 if index[i] == self.shape[i] - 1:
@@ -255,7 +285,7 @@ class TensorData:
                 else:
                     break
             if l:
-                s += l
+                stride += l
             else:
-                s += " "
-        return s
+                stride += " "
+        return stride

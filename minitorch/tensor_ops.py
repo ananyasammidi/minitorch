@@ -274,8 +274,10 @@ def tensor_map(fn: Callable[[float], float]) -> Any:
         # Use broadcast_index to map output index to input index
         # Use index_to_position to get storage positions
         # Apply fn to input value and store in output
-        raise NotImplementedError("Need to implement for Task 2.3")
-
+        for ordinal in range(len(out)):
+            to_index(ordinal, out_shape, np.empty(len(out_shape), dtype=np.int32))
+            broadcast_index(np.empty(len(out_shape), dtype=np.int32), out_shape, in_shape, np.empty(len(in_shape), dtype=np.int32))
+            out[index_to_position(np.empty(len(out_shape), dtype=np.int32), out_strides)] = fn(in_storage[index_to_position(np.empty(len(in_shape), dtype=np.int32), in_strides)])
     return _map
 
 
@@ -328,7 +330,17 @@ def tensor_zip(fn: Callable[[float, float], float]) -> Any:
         # For each output position, get corresponding positions in both inputs
         # Both inputs may need broadcasting to output shape
         # Apply fn to both input values and store result
-        raise NotImplementedError("Need to implement for Task 2.3")
+        out_index = np.empty(len(out_shape), dtype=np.int32)
+        a_index = np.empty(len(a_shape), dtype=np.int32)
+        b_index = np.empty(len(b_shape), dtype=np.int32)
+        for ordinal in range(len(out)):
+            to_index(ordinal, out_shape, out_index)
+            broadcast_index(out_index, out_shape, a_shape, a_index)
+            broadcast_index(out_index, out_shape, b_shape, b_index)
+            out[index_to_position(out_index, out_strides)] = fn(
+                a_storage[index_to_position(a_index, a_strides)],
+                b_storage[index_to_position(b_index, b_strides)]
+            )
 
     return _zip
 
@@ -368,7 +380,17 @@ def tensor_reduce(fn: Callable[[float, float], float]) -> Any:
         # Copy output index to input index, then vary the reduce dimension
         # Apply reduction function (fn) to accumulate values
         # Remember output is pre-initialized with start value
-        raise NotImplementedError("Need to implement for Task 2.3")
+        out_index = np.empty(len(out_shape), dtype=np.int32)
+        a_index = np.empty(len(a_shape), dtype=np.int32)
+        for ordinal in range(len(out)):
+            to_index(ordinal, out_shape, out_index)
+            out_pos = index_to_position(out_index, out_strides)
+            for i in range(len(out_index)):
+                a_index[i] = out_index[i]
+            for reduce_idx in range(a_shape[reduce_dim]):
+                a_index[reduce_dim] = reduce_idx
+                a_pos = index_to_position(a_index, a_strides)
+                out[out_pos] = fn(out[out_pos], a_storage[a_pos])
 
     return _reduce
 

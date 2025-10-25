@@ -25,8 +25,7 @@ ScalarLike = Union[float, int, "Scalar"]
 
 @dataclass
 class ScalarHistory:
-    """
-    `ScalarHistory` stores the history of `Function` operations that was
+    """`ScalarHistory` stores the history of `Function` operations that was
     used to construct the current Variable.
 
     Attributes:
@@ -43,13 +42,13 @@ class ScalarHistory:
 
 # ## Task 1.2 and 1.4
 # Scalar Forward and Backward
+# Use what you defined in scalar_functions.py
 
 _var_count = 0
 
 
 class Scalar:
-    """
-    A reimplementation of scalar values for autodifferentiation
+    """A reimplementation of scalar values for autodifferentiation
     tracking. Scalar Variables behave as close as possible to standard
     Python numbers while also tracking the operations that led to the
     number's creation. They can only be manipulated by
@@ -92,25 +91,34 @@ class Scalar:
         return Mul.apply(b, Inv.apply(self))
 
     def __add__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 1.2.
+        return Add.apply(self, b)
 
     def __bool__(self) -> bool:
         return bool(self.data)
 
+    def __float__(self) -> float:
+        return float(self.data)
+
     def __lt__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 1.2.
+        return LT.apply(self, b)
 
     def __gt__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 1.2.
+        return LT.apply(b, self)
 
     def __eq__(self, b: ScalarLike) -> Scalar:  # type: ignore[override]
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 1.2.
+        return EQ.apply(self, b)
 
     def __sub__(self, b: ScalarLike) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 1.2.
+        return Add.apply(self, Neg.apply(b))
 
     def __neg__(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 1.2.
+        return Neg.apply(self)
 
     def __radd__(self, b: ScalarLike) -> Scalar:
         return self + b
@@ -119,26 +127,34 @@ class Scalar:
         return self * b
 
     def log(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        """Implementing the log scalar function"""
+        # TODO: Implement for Task 1.2.
+        return Log.apply(self)
 
     def exp(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        """Implementing the exp scalar function"""
+        # TODO: Implement for Task 1.2.
+        return Exp.apply(self)
 
     def sigmoid(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        """Implementing the sigmoid scalar function"""
+        # TODO: Implement for Task 1.2.
+        return Sigmoid.apply(self)
 
     def relu(self) -> Scalar:
-        raise NotImplementedError("Need to include this file from past assignment.")
+        """Implementing the relu scalar function"""
+        # TODO: Implement for Task 1.2.
+        return ReLU.apply(self)
 
     # Variable elements for backprop
 
     def accumulate_derivative(self, x: Any) -> None:
-        """
-        Add `val` to the the derivative accumulated on this variable.
+        """Add `val` to the the derivative accumulated on this variable.
         Should only be called during autodifferentiation on leaf variables.
 
         Args:
             x: value to be accumulated
+
         """
         assert self.is_leaf(), "Only leaf variables can have derivatives."
         if self.derivative is None:
@@ -146,32 +162,37 @@ class Scalar:
         self.derivative += x
 
     def is_leaf(self) -> bool:
-        "True if this variable created by the user (no `last_fn`)"
+        """True if this variable created by the user (no `last_fn`)"""
         return self.history is not None and self.history.last_fn is None
 
     def is_constant(self) -> bool:
+        """Returns True if the history attribute does not exist"""
         return self.history is None
 
     @property
     def parents(self) -> Iterable[Variable]:
+        """Returns the parent inputs if there is history"""
         assert self.history is not None
         return self.history.inputs
 
     def chain_rule(self, d_output: Any) -> Iterable[Tuple[Variable, Any]]:
+        """Defining the chain rule by zipping the inputs from history and gradients"""
         h = self.history
         assert h is not None
         assert h.last_fn is not None
         assert h.ctx is not None
 
-        raise NotImplementedError("Need to include this file from past assignment.")
+        # TODO: Implement for Task 1.3.
+        gradients = h.last_fn._backward(h.ctx, d_output)
+        return zip(h.inputs, gradients)
 
     def backward(self, d_output: Optional[float] = None) -> None:
-        """
-        Calls autodiff to fill in the derivatives for the history of this object.
+        """Calls autodiff to fill in the derivatives for the history of this object.
 
         Args:
             d_output (number, opt): starting derivative to backpropagate through the model
                                    (typically left out, and assumed to be 1.0).
+
         """
         if d_output is None:
             d_output = 1.0
@@ -179,13 +200,13 @@ class Scalar:
 
 
 def derivative_check(f: Any, *scalars: Scalar) -> None:
-    """
-    Checks that autodiff works on a python function.
+    """Checks that autodiff works on a python function.
     Asserts False if derivative is incorrect.
 
-    Parameters:
-        f : function from n-scalars to 1-scalar.
-        *scalars  : n input scalar values.
+    Args:
+        f(Any): function from n-scalars to 1-scalar.
+        *scalars(Scalar): n input scalar values.
+
     """
     out = f(*scalars)
     out.backward()

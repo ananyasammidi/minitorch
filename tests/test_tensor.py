@@ -44,7 +44,7 @@ def test_two_args(
     t1, t2 = ts
     t3 = tensor_fn(t1, t2)
 
-    if name == 'div2':
+    if name == "div2":
         denom = t2 + 5.5
         assume((abs(denom.to_numpy()) > 1e-3).all())
 

@@ -276,14 +276,14 @@ def tensor_map(fn: Callable[[float], float]) -> Any:
         # Apply fn to input value and store in output
         out_index = np.empty(len(out_shape), dtype=np.int32)
         in_index = np.empty(len(in_shape), dtype=np.int32)
-        
+
         for ordinal in range(len(out)):
             to_index(ordinal, out_shape, out_index)
             broadcast_index(out_index, out_shape, in_shape, in_index)
             out_pos = index_to_position(out_index, out_strides)
             in_pos = index_to_position(in_index, in_strides)
             out[out_pos] = fn(in_storage[in_pos])
-    
+
     return _map
 
 def tensor_zip(fn: Callable[[float, float], float]) -> Any:

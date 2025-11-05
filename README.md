@@ -3,7 +3,7 @@
 
 ## Overview
 
-Minitorch is a lightweight re-implementation of the Torch API completely in Python. It implements essential components of PyTorch like auto-differentiation, tensors, and neural networks.
+Minitorch is a lightweight re-implementation of the Torch API completely in Python. It implements essential components of PyTorch like auto-differentiation, tensors, and neural networks from scratch
 
 ## Installation
 

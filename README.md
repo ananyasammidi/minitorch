@@ -3,7 +3,7 @@
 
 ## Overview
 
-Module 2 introduces **Tensors** - multidimensional arrays that extend the scalar autodifferentiation system from Module 1. While the scalar system is correct, it's inefficient due to Python overhead. Tensors solve this by grouping operations together and enabling faster implementations.
+Minitorch is a lightweight re-implementation of the Torch API completely in Python. It implements essential components of PyTorch like auto-differentiation, tensors, and neural networks.
 
 ## Installation
 
